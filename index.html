@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>kargiligundem</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <main class="layout">
+      <section class="panel form-panel">
+        <div class="section-heading">
+          <h2>Yonetim Paneli</h2>
+          <p>Yonetici anahtari ile giris yapip haber ekle, duzenle veya sil.</p>
+        </div>
+
+        <form id="admin-form" class="news-form">
+          <label for="admin-key">Yonetici Anahtari</label>
+          <input
+            id="admin-key"
+            name="adminKey"
+            type="password"
+            placeholder="Netlify ortam degiskenindeki anahtar"
+          >
+
+          <div class="form-actions">
+            <button type="submit" class="primary-btn" id="admin-submit-btn">Giris Yap</button>
+            <button type="button" class="ghost-btn hidden" id="logout-btn">Cikis</button>
+          </div>
+        </form>
+
+        <form id="news-form" class="news-form hidden">
+          <input type="hidden" id="editing-id">
+
+          <label for="news-title">Baslik</label>
+          <input
+            id="news-title"
+            name="title"
+            type="text"
+            placeholder="Orn. Gundemde one cikan gelisme"
+            required
+          >
+
+          <label for="news-link">X Linki</label>
+          <input
+            id="news-link"
+            name="link"
+            type="url"
+            placeholder="https://x.com/... veya https://twitter.com/..."
+            required
+          >
+
+          <div class="form-actions">
+            <button type="submit" class="primary-btn" id="submit-btn">Haberi Ekle</button>
+            <button type="button" class="ghost-btn hidden" id="cancel-edit-btn">Iptal</button>
+          </div>
+        </form>
+
+        <p id="admin-status" class="admin-status">
+          Ziyaretciler haberleri gorur. Duzenleme sadece yonetici icindir.
+        </p>
+      </section>
+
+      <section class="panel list-panel">
+        <div class="section-heading">
+          <h2>Eklenen Haberler</h2>
+          <p>Ekledigin X gonderileri burada dogrudan onizleme olarak gorunur.</p>
+        </div>
+
+        <div id="news-list" class="news-list"></div>
+      </section>
+    </main>
+  </div>
+
+  <template id="empty-state-template">
+    <div class="empty-state">
+      <p>Henuz haber eklenmedi.</p>
+    </div>
+  </template>
+
+  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+  <script src="script.js"></script>
+</body>
+</html>
