@@ -13,18 +13,12 @@
   <div class="page-shell">
     <main class="layout">
       <section class="panel form-panel">
-        <div class="section-heading">
-          <h2>Yonetim Paneli</h2>
-          <p>Yonetici anahtari ile giris yapip haber ekle, duzenle veya sil.</p>
-        </div>
-
-        <form id="admin-form" class="news-form">
-          <label for="admin-key">Yonetici Anahtari</label>
+        <form id="admin-form" class="news-form compact-form">
           <input
             id="admin-key"
             name="adminKey"
             type="password"
-            placeholder="Netlify ortam degiskenindeki anahtar"
+            placeholder="Yonetici anahtari"
           >
 
           <div class="form-actions">
@@ -33,8 +27,18 @@
           </div>
         </form>
 
+        <div id="category-manager" class="category-manager hidden">
+          <div class="mini-row">
+            <button type="button" class="ghost-btn slim-btn" id="add-category-btn">Kategori Ekle</button>
+          </div>
+          <div id="category-admin-list" class="category-admin-list"></div>
+        </div>
+
         <form id="news-form" class="news-form hidden">
           <input type="hidden" id="editing-id">
+
+          <label for="news-category">Kategori</label>
+          <select id="news-category" name="category"></select>
 
           <label for="news-title">Baslik</label>
           <input
@@ -60,17 +64,11 @@
           </div>
         </form>
 
-        <p id="admin-status" class="admin-status">
-          Ziyaretciler haberleri gorur. Duzenleme sadece yonetici icindir.
-        </p>
+        <p id="admin-status" class="admin-status hidden"></p>
       </section>
 
       <section class="panel list-panel">
-        <div class="section-heading">
-          <h2>Eklenen Haberler</h2>
-          <p>Ekledigin X gonderileri burada dogrudan onizleme olarak gorunur.</p>
-        </div>
-
+        <div id="category-filters" class="category-filters"></div>
         <div id="news-list" class="news-list"></div>
       </section>
     </main>
@@ -78,7 +76,7 @@
 
   <template id="empty-state-template">
     <div class="empty-state">
-      <p>Henuz haber eklenmedi.</p>
+      <p>Bu alanda gosterilecek haber bulunmuyor.</p>
     </div>
   </template>
 
