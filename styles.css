@@ -25,12 +25,13 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
 .page-shell {
-  width: min(1120px, calc(100% - 32px));
+  width: min(1180px, calc(100% - 32px));
   margin: 0 auto;
   padding: 32px 0 72px;
 }
@@ -49,21 +50,18 @@ input {
   box-shadow: var(--shadow);
 }
 
-.section-heading h2 {
-  margin: 0;
-  font-size: 1.2rem;
-}
-
-.section-heading p {
-  margin: 8px 0 0;
-  color: var(--muted);
-  line-height: 1.5;
-}
-
 .news-form {
-  margin-top: 24px;
   display: grid;
   gap: 12px;
+}
+
+.compact-form {
+  gap: 14px;
+}
+
+.news-form + .news-form,
+.category-manager {
+  margin-top: 20px;
 }
 
 .news-form label {
@@ -71,7 +69,8 @@ input {
   font-size: 0.92rem;
 }
 
-.news-form input {
+.news-form input,
+.news-form select {
   width: 100%;
   border: 1px solid var(--border);
   border-radius: 16px;
@@ -82,20 +81,23 @@ input {
   transition: border-color 0.2s ease, transform 0.2s ease;
 }
 
-.news-form input:focus {
+.news-form input:focus,
+.news-form select:focus {
   border-color: rgba(255, 255, 255, 0.28);
   transform: translateY(-1px);
 }
 
-.form-actions {
+.form-actions,
+.mini-row {
   display: flex;
   gap: 10px;
-  margin-top: 8px;
 }
 
 .primary-btn,
 .ghost-btn,
-.card-btn {
+.card-btn,
+.chip-btn,
+.tiny-btn {
   border: 0;
   border-radius: 999px;
   padding: 12px 16px;
@@ -105,7 +107,9 @@ input {
 
 .primary-btn:hover,
 .ghost-btn:hover,
-.card-btn:hover {
+.card-btn:hover,
+.chip-btn:hover,
+.tiny-btn:hover {
   transform: translateY(-1px);
 }
 
@@ -115,20 +119,80 @@ input {
   font-weight: 800;
 }
 
-.ghost-btn {
+.ghost-btn,
+.chip-btn {
   background: transparent;
   color: var(--text);
   border: 1px solid var(--border);
 }
 
+.slim-btn,
+.tiny-btn {
+  padding: 9px 13px;
+  font-size: 0.88rem;
+}
+
 .admin-status {
-  margin: 18px 0 0;
-  color: var(--muted);
-  line-height: 1.6;
+  margin: 16px 0 0;
+  color: #ffb3b3;
+  line-height: 1.5;
+}
+
+.category-manager {
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+}
+
+.category-admin-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.category-admin-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.category-admin-name {
+  font-size: 0.95rem;
+}
+
+.tiny-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.tiny-btn {
+  background: #222327;
+  color: var(--text);
+}
+
+.danger-btn {
+  background: rgba(255, 92, 92, 0.12);
+  color: #ff9b9b;
+}
+
+.category-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chip-btn.active {
+  background: var(--accent);
+  color: #050505;
+  font-weight: 800;
 }
 
 .news-list {
-  margin-top: 24px;
+  margin-top: 22px;
   display: grid;
   gap: 18px;
 }
@@ -151,6 +215,18 @@ input {
 .news-card-title-wrap h3 {
   margin: 0 0 8px;
   font-size: 1.1rem;
+}
+
+.category-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #dcdcdc;
+  font-size: 0.84rem;
 }
 
 .news-link {
@@ -194,7 +270,18 @@ input {
   background: #111214;
   border: 1px solid rgba(255, 255, 255, 0.05);
   padding: 10px;
-  min-height: 120px;
+  min-height: 110px;
+}
+
+.preview-loading,
+.preview-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 110px;
+  color: var(--muted);
+  text-align: center;
+  padding: 16px;
 }
 
 .preview-fallback {
@@ -202,14 +289,6 @@ input {
   color: var(--muted);
   line-height: 1.6;
   padding: 22px 16px;
-}
-
-.preview-loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 120px;
-  color: var(--muted);
 }
 
 .empty-state {
@@ -233,7 +312,7 @@ input {
 
 @media (max-width: 640px) {
   .page-shell {
-    width: min(100% - 20px, 1120px);
+    width: min(100% - 20px, 1180px);
     padding-top: 20px;
   }
 
@@ -246,17 +325,27 @@ input {
     flex-direction: column;
   }
 
-  .card-actions {
+  .card-actions,
+  .form-actions,
+  .mini-row {
     width: 100%;
+    flex-direction: column;
   }
 
   .card-btn,
   .primary-btn,
-  .ghost-btn {
+  .ghost-btn,
+  .chip-btn,
+  .tiny-btn {
     width: 100%;
   }
 
-  .form-actions {
+  .tiny-actions {
+    width: 100%;
+  }
+
+  .category-admin-item {
+    align-items: flex-start;
     flex-direction: column;
   }
 }
