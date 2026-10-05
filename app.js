@@ -20,7 +20,11 @@ async function request(method = 'GET', payload) {
 function validUrl(value) {
   try { const url = new URL(value); return ['http:','https:'].includes(url.protocol); } catch { return false; }
 }
+function isXPost(value) {
+  try { const url = new URL(value); return ['x.com','www.x.com','twitter.com','www.twitter.com'].includes(url.hostname) && /\/status\/\d+/.test(url.pathname); } catch { return false; }
+}
 function hostOf(value) { try { return new URL(value).hostname.replace(/^www\./,''); } catch { return 'Kaynak'; } }
+function displayTitle(item) { return item.title?.trim() || `Haber bağlantısı · ${hostOf(item.link)}`; }
 function formatDate(value) {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? 'Yeni' : new Intl.DateTimeFormat('tr-TR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}).format(date);
@@ -44,8 +48,8 @@ function safeLink(url, label, className = 'story-link') {
 
 function renderFollowups(item, canManage) {
   const list = Array.isArray(item.followups) ? item.followups : [];
-  const entries = list.map((entry) => `<div class="follow"><h4>${esc(entry.title)}</h4>${safeLink(entry.link,hostOf(entry.link),'follow-link')}${canManage?`<div class="follow-edit"><button class="mini" data-edit-follow="${esc(item.id)}|${esc(entry.id)}">Düzenle</button><button class="mini danger" data-delete-follow="${esc(item.id)}|${esc(entry.id)}">Sil</button></div>`:''}</div>`).join('');
-  return `${list.length?`<div class="followups"><div class="follow-title">HABERİN DEVAMI · ${list.length}</div>${entries}</div>`:''}${canManage?`<div class="follow-admin"><div class="follow-title">BU HABERLE İLGİLİ DEVAM HABERİ EKLE</div><form class="follow-form" data-follow-form="${esc(item.id)}"><input name="title" maxlength="240" placeholder="Devam haberinin başlığı" required><input name="link" type="url" placeholder="https://kaynak.com/devam-haberi" required><button>Devam haberi ekle</button></form></div>`:''}`;
+  const entries = list.map((entry) => `<div class="follow"><h4>${esc(displayTitle(entry))}</h4>${safeLink(entry.link,hostOf(entry.link),'follow-link')}${canManage?`<div class="follow-edit"><button class="mini" data-edit-follow="${esc(item.id)}|${esc(entry.id)}">Düzenle</button><button class="mini danger" data-delete-follow="${esc(item.id)}|${esc(entry.id)}">Sil</button></div>`:''}</div>`).join('');
+  return `${list.length?`<div class="followups"><div class="follow-title">HABERİN DEVAMI · ${list.length}</div>${entries}</div>`:''}${canManage?`<div class="follow-admin"><div class="follow-title">BU HABERLE İLGİLİ DEVAM HABERİ EKLE</div><form class="follow-form" data-follow-form="${esc(item.id)}"><input name="title" maxlength="240" placeholder="Başlık (isteğe bağlı)"><input name="link" type="url" placeholder="https://kaynak.com/devam-haberi" required><button>Devam haberi ekle</button></form></div>`:''}`;
 }
 
 function renderAdminItems() {
@@ -55,7 +59,7 @@ function renderAdminItems() {
   if (!items.length) return;
   const list = document.createElement('div');
   list.id = 'adminList';
-  list.innerHTML = items.map((item) => `<div class="admin-story"><div><b>${esc(item.title)}</b><small>${esc(item.categoryName || categories().find((c)=>c.id===item.categoryId)?.name || 'Haber')} · ${esc(hostOf(item.link))}</small></div><div class="admin-story-actions"><button class="mini" data-edit-item="${esc(item.id)}">Düzenle</button><button class="mini danger" data-delete-item="${esc(item.id)}">Sil</button></div></div>`).join('');
+  list.innerHTML = items.map((item) => `<div class="admin-story"><div><b>${esc(displayTitle(item))}</b><small>${esc(item.categoryName || categories().find((c)=>c.id===item.categoryId)?.name || 'Haber')} · ${esc(hostOf(item.link))}</small></div><div class="admin-story-actions"><button class="mini" data-edit-item="${esc(item.id)}">Düzenle</button><button class="mini danger" data-delete-item="${esc(item.id)}">Sil</button></div></div>`).join('');
   $('#editor').append(list);
   list.querySelectorAll('[data-edit-item]').forEach((button) => button.onclick = () => editItem(button.dataset.editItem));
   list.querySelectorAll('[data-delete-item]').forEach((button) => button.onclick = () => deleteItem(button.dataset.deleteItem));
@@ -64,18 +68,22 @@ function renderAdminItems() {
 function renderFeed() {
   const query = $('#search').value.trim().toLocaleLowerCase('tr-TR');
   const items = state.items.filter((item) => (!activeCategory || item.categoryId===activeCategory) && (!query || `${item.title} ${hostOf(item.link)} ${(item.followups||[]).map((follow)=>follow.title).join(' ')}`.toLocaleLowerCase('tr-TR').includes(query)));
-  $('#feedTitle').textContent = `${items.length} haber`;
+  $('#feedTitle').textContent = 'Son haberler';
   $('#empty').classList.toggle('hidden', items.length > 0);
   $('#feed').innerHTML = items.map((item) => {
     const category = categories().find((entry) => entry.id === item.categoryId)?.name || item.categoryName || 'Haber';
     const canManage = Boolean(adminKey);
-    return `<article class="story"><div class="story-meta"><span class="tag">${esc(category)}</span><span>·</span><time>${esc(formatDate(item.createdAt))}</time><span>·</span><span>${esc(hostOf(item.link))}</span></div>${canManage?`<div class="story-actions"><button class="mini" data-edit-item="${esc(item.id)}">Düzenle</button><button class="mini danger" data-delete-item="${esc(item.id)}">Sil</button></div>`:''}<h3>${esc(item.title)}</h3>${safeLink(item.link, item.link)}<div class="source-line">Haber kaynağı: ${esc(hostOf(item.link))}</div>${renderFollowups(item,canManage)}</article>`;
+    const preview = isXPost(item.link)
+      ? `<div class="post-preview"><blockquote class="twitter-tweet" data-dnt="true"><a href="${esc(item.link)}">X gönderisini görüntüle</a></blockquote></div>`
+      : `<h3>${esc(displayTitle(item))}</h3>${safeLink(item.link, item.link)}`;
+    return `<article class="story"><div class="story-meta"><span class="tag">${esc(category)}</span><span>·</span><time>${esc(formatDate(item.createdAt))}</time><span>·</span><span>${esc(hostOf(item.link))}</span></div>${canManage?`<div class="story-actions"><button class="mini" data-edit-item="${esc(item.id)}">Düzenle</button><button class="mini danger" data-delete-item="${esc(item.id)}">Sil</button></div>`:''}${preview}<div class="source-line">Haber kaynağı: ${esc(hostOf(item.link))}</div>${renderFollowups(item,canManage)}</article>`;
   }).join('');
   $('#feed').querySelectorAll('[data-edit-item]').forEach((button) => button.onclick = () => editItem(button.dataset.editItem));
   $('#feed').querySelectorAll('[data-delete-item]').forEach((button) => button.onclick = () => deleteItem(button.dataset.deleteItem));
   $('#feed').querySelectorAll('[data-follow-form]').forEach((form) => form.onsubmit = (event) => addFollowup(event,form));
   $('#feed').querySelectorAll('[data-delete-follow]').forEach((button) => button.onclick = () => deleteFollowup(button.dataset.deleteFollow));
   $('#feed').querySelectorAll('[data-edit-follow]').forEach((button) => button.onclick = () => editFollowup(button.dataset.editFollow));
+  if (window.twttr?.widgets) window.twttr.widgets.load($('#feed'));
 }
 
 function render() { renderFilters(); renderFeed(); if (adminKey) renderAdminItems(); }
@@ -107,7 +115,7 @@ function editItem(id) {
   if (!item) return;
   $('#itemId').value = item.id;
   $('#category').value = item.categoryId;
-  $('#title').value = item.title;
+  $('#title').value = item.title || '';
   $('#link').value = item.link;
   $('#formHeading').textContent = 'Haberi düzenle';
   $('#saveNews').textContent = 'Değişiklikleri kaydet';
@@ -142,7 +150,7 @@ async function editFollowup(value) {
   const [itemId,followupId] = value.split('|');
   const item = state.items.find((entry)=>entry.id===itemId), followup = item?.followups?.find((entry)=>entry.id===followupId);
   if (!followup) return;
-  const title = prompt('Devam haberinin başlığı',followup.title);
+  const title = prompt('Devam haberinin başlığı (isteğe bağlı)',followup.title || '');
   if (title === null) return;
   const link = prompt('Devam haberinin bağlantısı',followup.link);
   if (link === null) return;

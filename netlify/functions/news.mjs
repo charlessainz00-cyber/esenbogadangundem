@@ -120,11 +120,10 @@ async function handleDeleteCategory(store, payload) {
 
 async function handleCreateItem(store, payload) {
   const categoryId = payload?.categoryId?.trim();
-  const title = payload?.title?.trim();
   const link = normalizeUrl(payload?.link?.trim() ?? "");
 
-  if (!categoryId || !title || !isValidNewsUrl(link)) {
-    return jsonResponse({ message: "Gecerli kategori, baslik ve haber baglantisi gerekli." }, 400);
+  if (!categoryId || !isValidNewsUrl(link)) {
+    return jsonResponse({ message: "Gecerli kategori ve haber baglantisi gerekli." }, 400);
   }
 
   const state = await readState(store);
@@ -136,7 +135,7 @@ async function handleCreateItem(store, payload) {
   state.items.unshift({
     id: crypto.randomUUID(),
     categoryId,
-    title,
+    title: payload?.title?.trim() ?? "",
     link,
     followups: [],
     createdAt: new Date().toISOString(),
@@ -149,10 +148,9 @@ async function handleCreateItem(store, payload) {
 async function handleUpdateItem(store, payload) {
   const itemId = payload?.id?.trim();
   const categoryId = payload?.categoryId?.trim();
-  const title = payload?.title?.trim();
   const link = normalizeUrl(payload?.link?.trim() ?? "");
 
-  if (!itemId || !categoryId || !title || !isValidNewsUrl(link)) {
+  if (!itemId || !categoryId || !isValidNewsUrl(link)) {
     return jsonResponse({ message: "Guncelleme icin gecerli veri gerekli." }, 400);
   }
 
@@ -170,7 +168,7 @@ async function handleUpdateItem(store, payload) {
   state.items[itemIndex] = {
     ...state.items[itemIndex],
     categoryId,
-    title,
+    title: payload?.title?.trim() ?? "",
     link,
     followups: Array.isArray(state.items[itemIndex].followups) ? state.items[itemIndex].followups : [],
     updatedAt: new Date().toISOString(),
@@ -182,16 +180,15 @@ async function handleUpdateItem(store, payload) {
 
 async function handleCreateFollowup(store, payload) {
   const itemId = payload?.itemId?.trim();
-  const title = payload?.title?.trim();
   const link = normalizeUrl(payload?.link?.trim() ?? "");
-  if (!itemId || !title || !isValidNewsUrl(link)) {
-    return jsonResponse({ message: "Gecerli haber basligi ve baglantisi gerekli." }, 400);
+  if (!itemId || !isValidNewsUrl(link)) {
+    return jsonResponse({ message: "Gecerli haber baglantisi gerekli." }, 400);
   }
   const state = await readState(store);
   const item = state.items.find((entry) => entry.id === itemId);
   if (!item) return jsonResponse({ message: "Ana haber bulunamadi." }, 404);
   item.followups = Array.isArray(item.followups) ? item.followups : [];
-  item.followups.unshift({ id: crypto.randomUUID(), title, link, createdAt: new Date().toISOString() });
+  item.followups.unshift({ id: crypto.randomUUID(), title: payload?.title?.trim() ?? "", link, createdAt: new Date().toISOString() });
   await writeState(store, state);
   return jsonResponse(state, 201);
 }
@@ -199,16 +196,15 @@ async function handleCreateFollowup(store, payload) {
 async function handleUpdateFollowup(store, payload) {
   const itemId = payload?.itemId?.trim();
   const followupId = payload?.followupId?.trim();
-  const title = payload?.title?.trim();
   const link = normalizeUrl(payload?.link?.trim() ?? "");
-  if (!itemId || !followupId || !title || !isValidNewsUrl(link)) {
+  if (!itemId || !followupId || !isValidNewsUrl(link)) {
     return jsonResponse({ message: "Guncelleme icin gecerli haber bilgileri gerekli." }, 400);
   }
   const state = await readState(store);
   const item = state.items.find((entry) => entry.id === itemId);
   const followup = item?.followups?.find((entry) => entry.id === followupId);
   if (!followup) return jsonResponse({ message: "Devam haberi bulunamadi." }, 404);
-  Object.assign(followup, { title, link, updatedAt: new Date().toISOString() });
+  Object.assign(followup, { title: payload?.title?.trim() ?? "", link, updatedAt: new Date().toISOString() });
   await writeState(store, state);
   return jsonResponse(state);
 }

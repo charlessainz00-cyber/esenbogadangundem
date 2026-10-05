@@ -10,7 +10,7 @@
 <body>
   <header class="top"><a class="brand" href="#"><span class="mark">g.</span><span>gündem<small>haber panosu</small></span></a><div class="top-right"><span id="connection" class="status">● Bağlanıyor</span><button id="adminToggle" class="button ghost">Yönetici girişi</button></div></header>
   <main class="layout">
-    <section class="intro"><div class="eyebrow">GÜNDEM PANOSU</div><h1>Haberler, <em>tek yerde.</em></h1><p>Farklı kaynaklardan haberleri ve aynı konudaki devam haberlerini takip et.</p><div class="filters" id="filters"></div></section>
+    <section class="filters" id="filters" aria-label="Haber kategorileri"></section>
     <section id="adminPanel" class="admin hidden">
       <div class="panel-head"><div><div class="eyebrow">YÖNETİM</div><h2 id="formHeading">Yeni haber ekle</h2></div><button id="logout" class="button ghost hidden">Çıkış</button></div>
       <form id="loginForm" class="login-row"><label class="field grow"><span>Yönetici anahtarı</span><input id="adminKey" type="password" autocomplete="current-password" placeholder="Netlify yönetici anahtarı" required></label><button class="button light" type="submit">Giriş yap</button></form>
@@ -18,7 +18,7 @@
         <form id="newsForm" class="form-grid">
           <input id="itemId" type="hidden">
           <label class="field"><span>Kategori</span><select id="category" required></select></label>
-          <label class="field"><span>Haber başlığı</span><input id="title" maxlength="240" placeholder="Haberi kısa ve açık anlat" required></label>
+          <label class="field"><span>Haber başlığı (isteğe bağlı)</span><input id="title" maxlength="240" placeholder="Boş bırakırsanız kaynak adı gösterilir"></label>
           <label class="field wide"><span>Haber bağlantısı</span><input id="link" type="url" placeholder="https://kaynak.com/haber" required></label>
           <div class="wide form-actions"><button id="cancelEdit" type="button" class="button ghost hidden">Düzenlemeyi iptal et</button><button id="saveNews" class="button light" type="submit">Haberi ekle</button></div>
         </form>
@@ -26,12 +26,12 @@
       </div>
       <p id="errorMessage" class="error hidden" role="alert"></p>
     </section>
-    <section class="feed-head"><div><div class="eyebrow">SON HABERLER</div><h2 id="feedTitle">Haberler yükleniyor…</h2></div><label class="search"><span>⌕</span><input id="search" placeholder="Başlık veya kaynak ara"></label></section>
+    <section class="feed-head"><div class="eyebrow">SON HABERLER</div><h2 id="feedTitle" class="visually-hidden" aria-live="polite">Haberler yükleniyor…</h2><label class="search"><span>⌕</span><input id="search" placeholder="Başlık veya kaynak ara"></label></section>
     <section id="feed" class="feed" aria-live="polite"></section>
     <div id="empty" class="empty hidden">Bu kategoride henüz haber yok.</div>
   </main>
-  <footer>GÜNDEM PANOSU <span>·</span> FARKLI KAYNAKLAR, TEK AKIŞ</footer>
   <div id="toast" class="toast" role="status"></div>
+  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
   <script src="app.js"></script>
 </body>
 </html>
