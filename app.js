@@ -74,7 +74,7 @@ function renderFeed() {
     const category = categories().find((entry) => entry.id === item.categoryId)?.name || item.categoryName || 'Haber';
     const canManage = Boolean(adminKey);
     const preview = isXPost(item.link)
-      ? `<div class="post-preview"><blockquote class="twitter-tweet" data-dnt="true"><a href="${esc(item.link)}">X gönderisini görüntüle</a></blockquote></div>`
+      ? `<div class="post-preview"><blockquote class="twitter-tweet" data-theme="dark" data-dnt="true"><a href="${esc(item.link)}">X gönderisini görüntüle</a></blockquote></div>`
       : `<h3>${esc(displayTitle(item))}</h3>${safeLink(item.link, item.link)}`;
     return `<article class="story"><div class="story-meta"><span class="tag">${esc(category)}</span><span>·</span><time>${esc(formatDate(item.createdAt))}</time><span>·</span><span>${esc(hostOf(item.link))}</span></div>${canManage?`<div class="story-actions"><button class="mini" data-edit-item="${esc(item.id)}">Düzenle</button><button class="mini danger" data-delete-item="${esc(item.id)}">Sil</button></div>`:''}${preview}<div class="source-line">Haber kaynağı: ${esc(hostOf(item.link))}</div>${renderFollowups(item,canManage)}</article>`;
   }).join('');
