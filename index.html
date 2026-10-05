@@ -1,86 +1,37 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>kargiligundem</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101010">
+  <title>Gündem Panosu</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="page-shell">
-    <main class="layout">
-      <section class="panel form-panel">
-        <form id="admin-form" class="news-form compact-form">
-          <input
-            id="admin-key"
-            name="adminKey"
-            type="password"
-            placeholder="Yonetici anahtari"
-          >
-
-          <div class="form-actions">
-            <button type="submit" class="primary-btn" id="admin-submit-btn">Giris Yap</button>
-            <button type="button" class="ghost-btn hidden" id="logout-btn">Cikis</button>
-          </div>
+  <header class="top"><a class="brand" href="#"><span class="mark">g.</span><span>gündem<small>haber panosu</small></span></a><div class="top-right"><span id="connection" class="status">● Bağlanıyor</span><button id="adminToggle" class="button ghost">Yönetici girişi</button></div></header>
+  <main class="layout">
+    <section class="intro"><div class="eyebrow">GÜNDEM PANOSU</div><h1>Haberler, <em>tek yerde.</em></h1><p>Farklı kaynaklardan haberleri ve aynı konudaki devam haberlerini takip et.</p><div class="filters" id="filters"></div></section>
+    <section id="adminPanel" class="admin hidden">
+      <div class="panel-head"><div><div class="eyebrow">YÖNETİM</div><h2 id="formHeading">Yeni haber ekle</h2></div><button id="logout" class="button ghost hidden">Çıkış</button></div>
+      <form id="loginForm" class="login-row"><label class="field grow"><span>Yönetici anahtarı</span><input id="adminKey" type="password" autocomplete="current-password" placeholder="Netlify yönetici anahtarı" required></label><button class="button light" type="submit">Giriş yap</button></form>
+      <div id="editor" class="hidden">
+        <form id="newsForm" class="form-grid">
+          <input id="itemId" type="hidden">
+          <label class="field"><span>Kategori</span><select id="category" required></select></label>
+          <label class="field"><span>Haber başlığı</span><input id="title" maxlength="240" placeholder="Haberi kısa ve açık anlat" required></label>
+          <label class="field wide"><span>Haber bağlantısı</span><input id="link" type="url" placeholder="https://kaynak.com/haber" required></label>
+          <div class="wide form-actions"><button id="cancelEdit" type="button" class="button ghost hidden">Düzenlemeyi iptal et</button><button id="saveNews" class="button light" type="submit">Haberi ekle</button></div>
         </form>
-
-        <div id="category-manager" class="category-manager hidden">
-          <div class="mini-row">
-            <button type="button" class="ghost-btn slim-btn" id="add-category-btn">Kategori Ekle</button>
-          </div>
-          <div id="category-admin-list" class="category-admin-list"></div>
-        </div>
-
-        <form id="news-form" class="news-form hidden">
-          <input type="hidden" id="editing-id">
-
-          <label for="news-category">Kategori</label>
-          <select id="news-category" name="category"></select>
-
-          <label for="news-title">Baslik</label>
-          <input
-            id="news-title"
-            name="title"
-            type="text"
-            placeholder="Orn. Gundemde one cikan gelisme"
-            required
-          >
-
-          <label for="news-link">X Linki</label>
-          <input
-            id="news-link"
-            name="link"
-            type="url"
-            placeholder="https://x.com/... veya https://twitter.com/..."
-            required
-          >
-
-          <div class="form-actions">
-            <button type="submit" class="primary-btn" id="submit-btn">Haberi Ekle</button>
-            <button type="button" class="ghost-btn hidden" id="cancel-edit-btn">Iptal</button>
-          </div>
-        </form>
-
-        <p id="admin-status" class="admin-status hidden"></p>
-      </section>
-
-      <section class="panel list-panel">
-        <div id="category-filters" class="category-filters"></div>
-        <div id="news-list" class="news-list"></div>
-      </section>
-    </main>
-  </div>
-
-  <template id="empty-state-template">
-    <div class="empty-state">
-      <p>Bu alanda gosterilecek haber bulunmuyor.</p>
-    </div>
-  </template>
-
-  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-  <script src="script.js"></script>
+        <div class="admin-list-head"><h3>Eklenen haberler</h3><span id="adminCount"></span></div>
+      </div>
+      <p id="errorMessage" class="error hidden" role="alert"></p>
+    </section>
+    <section class="feed-head"><div><div class="eyebrow">SON HABERLER</div><h2 id="feedTitle">Haberler yükleniyor…</h2></div><label class="search"><span>⌕</span><input id="search" placeholder="Başlık veya kaynak ara"></label></section>
+    <section id="feed" class="feed" aria-live="polite"></section>
+    <div id="empty" class="empty hidden">Bu kategoride henüz haber yok.</div>
+  </main>
+  <footer>GÜNDEM PANOSU <span>·</span> FARKLI KAYNAKLAR, TEK AKIŞ</footer>
+  <div id="toast" class="toast" role="status"></div>
+  <script src="app.js"></script>
 </body>
 </html>

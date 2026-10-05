@@ -17,9 +17,16 @@ export default async (request) => {
 
   const payload = await safeJson(request);
 
+  if (request.method === "POST" && payload?.resource === "check") {
+    return jsonResponse({ ok: true });
+  }
+
   if (request.method === "POST") {
     if (payload?.resource === "category") {
       return handleCreateCategory(store, payload);
+    }
+    if (payload?.resource === "followup") {
+      return handleCreateFollowup(store, payload);
     }
 
     return handleCreateItem(store, payload);
@@ -29,6 +36,9 @@ export default async (request) => {
     if (payload?.resource === "category") {
       return handleUpdateCategory(store, payload);
     }
+    if (payload?.resource === "followup") {
+      return handleUpdateFollowup(store, payload);
+    }
 
     return handleUpdateItem(store, payload);
   }
@@ -36,6 +46,9 @@ export default async (request) => {
   if (request.method === "DELETE") {
     if (payload?.resource === "category") {
       return handleDeleteCategory(store, payload);
+    }
+    if (payload?.resource === "followup") {
+      return handleDeleteFollowup(store, payload);
     }
 
     return handleDeleteItem(store, payload);
@@ -110,8 +123,8 @@ async function handleCreateItem(store, payload) {
   const title = payload?.title?.trim();
   const link = normalizeUrl(payload?.link?.trim() ?? "");
 
-  if (!categoryId || !title || !isValidXUrl(link)) {
-    return jsonResponse({ message: "Gecerli kategori, baslik ve X linki gerekli." }, 400);
+  if (!categoryId || !title || !isValidNewsUrl(link)) {
+    return jsonResponse({ message: "Gecerli kategori, baslik ve haber baglantisi gerekli." }, 400);
   }
 
   const state = await readState(store);
@@ -125,6 +138,7 @@ async function handleCreateItem(store, payload) {
     categoryId,
     title,
     link,
+    followups: [],
     createdAt: new Date().toISOString(),
   });
 
@@ -138,7 +152,7 @@ async function handleUpdateItem(store, payload) {
   const title = payload?.title?.trim();
   const link = normalizeUrl(payload?.link?.trim() ?? "");
 
-  if (!itemId || !categoryId || !title || !isValidXUrl(link)) {
+  if (!itemId || !categoryId || !title || !isValidNewsUrl(link)) {
     return jsonResponse({ message: "Guncelleme icin gecerli veri gerekli." }, 400);
   }
 
@@ -158,9 +172,57 @@ async function handleUpdateItem(store, payload) {
     categoryId,
     title,
     link,
+    followups: Array.isArray(state.items[itemIndex].followups) ? state.items[itemIndex].followups : [],
     updatedAt: new Date().toISOString(),
   };
 
+  await writeState(store, state);
+  return jsonResponse(state);
+}
+
+async function handleCreateFollowup(store, payload) {
+  const itemId = payload?.itemId?.trim();
+  const title = payload?.title?.trim();
+  const link = normalizeUrl(payload?.link?.trim() ?? "");
+  if (!itemId || !title || !isValidNewsUrl(link)) {
+    return jsonResponse({ message: "Gecerli haber basligi ve baglantisi gerekli." }, 400);
+  }
+  const state = await readState(store);
+  const item = state.items.find((entry) => entry.id === itemId);
+  if (!item) return jsonResponse({ message: "Ana haber bulunamadi." }, 404);
+  item.followups = Array.isArray(item.followups) ? item.followups : [];
+  item.followups.unshift({ id: crypto.randomUUID(), title, link, createdAt: new Date().toISOString() });
+  await writeState(store, state);
+  return jsonResponse(state, 201);
+}
+
+async function handleUpdateFollowup(store, payload) {
+  const itemId = payload?.itemId?.trim();
+  const followupId = payload?.followupId?.trim();
+  const title = payload?.title?.trim();
+  const link = normalizeUrl(payload?.link?.trim() ?? "");
+  if (!itemId || !followupId || !title || !isValidNewsUrl(link)) {
+    return jsonResponse({ message: "Guncelleme icin gecerli haber bilgileri gerekli." }, 400);
+  }
+  const state = await readState(store);
+  const item = state.items.find((entry) => entry.id === itemId);
+  const followup = item?.followups?.find((entry) => entry.id === followupId);
+  if (!followup) return jsonResponse({ message: "Devam haberi bulunamadi." }, 404);
+  Object.assign(followup, { title, link, updatedAt: new Date().toISOString() });
+  await writeState(store, state);
+  return jsonResponse(state);
+}
+
+async function handleDeleteFollowup(store, payload) {
+  const itemId = payload?.itemId?.trim();
+  const followupId = payload?.followupId?.trim();
+  if (!itemId || !followupId) return jsonResponse({ message: "Silinecek haber bilgisi eksik." }, 400);
+  const state = await readState(store);
+  const item = state.items.find((entry) => entry.id === itemId);
+  if (!item || !Array.isArray(item.followups)) return jsonResponse({ message: "Devam haberi bulunamadi." }, 404);
+  const before = item.followups.length;
+  item.followups = item.followups.filter((entry) => entry.id !== followupId);
+  if (before === item.followups.length) return jsonResponse({ message: "Devam haberi bulunamadi." }, 404);
   await writeState(store, state);
   return jsonResponse(state);
 }
@@ -189,9 +251,13 @@ async function readState(store) {
   const items = await store.get(ITEM_STORE_KEY, { type: "json" });
   const categories = await store.get(CATEGORY_STORE_KEY, { type: "json" });
 
+  const savedCategories = Array.isArray(categories) ? categories : [];
   return {
     items: Array.isArray(items) ? items : [],
-    categories: Array.isArray(categories) ? categories : [],
+    categories: savedCategories.length ? savedCategories : [
+      { id: "hariciye", name: "Hariciye" },
+      { id: "dahiliye", name: "Dahiliye" },
+    ],
   };
 }
 
@@ -240,11 +306,10 @@ function normalizeUrl(value) {
   return `https://${value}`;
 }
 
-function isValidXUrl(value) {
+function isValidNewsUrl(value) {
   try {
     const url = new URL(value);
-    const allowedHosts = ["x.com", "www.x.com", "twitter.com", "www.twitter.com"];
-    return allowedHosts.includes(url.hostname) && /\/status\/\d+/.test(url.pathname);
+    return ["http:", "https:"].includes(url.protocol) && Boolean(url.hostname);
   } catch {
     return false;
   }
