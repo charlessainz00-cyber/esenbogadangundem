@@ -18,15 +18,20 @@
         <form id="newsForm" class="form-grid">
           <input id="itemId" type="hidden">
           <label class="field"><span>Kategori</span><select id="category" required></select></label>
-          <label class="field"><span>Haber başlığı (isteğe bağlı)</span><input id="title" maxlength="240" placeholder="Boş bırakırsanız kaynak adı gösterilir"></label>
+          <label class="field"><span>Haber başlığı</span><input id="title" maxlength="240" placeholder="Haber başlığını yazın"></label>
           <label class="field wide"><span>Haber bağlantısı</span><input id="link" type="url" placeholder="https://kaynak.com/haber" required></label>
           <div class="wide form-actions"><button id="cancelEdit" type="button" class="button ghost hidden">Düzenlemeyi iptal et</button><button id="saveNews" class="button light" type="submit">Haberi ekle</button></div>
         </form>
+        <section class="category-manager" aria-labelledby="categoryHeading">
+          <div class="category-manager-head"><div><h3 id="categoryHeading">Kategorileri yönet</h3><p>Kategori ekleyebilir, adını değiştirebilir veya kaldırabilirsiniz.</p></div></div>
+          <form id="categoryForm" class="category-form"><label class="visually-hidden" for="newCategory">Yeni kategori adı</label><input id="newCategory" maxlength="60" placeholder="Yeni kategori adı" required><button class="button light" type="submit">Kategori ekle</button></form>
+          <div id="categoryList" class="category-list"></div>
+        </section>
         <div class="admin-list-head"><h3>Eklenen haberler</h3><span id="adminCount"></span></div>
       </div>
       <p id="errorMessage" class="error hidden" role="alert"></p>
     </section>
-    <section class="feed-head"><div class="eyebrow">SON HABERLER</div><h2 id="feedTitle" class="visually-hidden" aria-live="polite">Haberler yükleniyor…</h2><label class="search"><span>⌕</span><input id="search" placeholder="Başlık veya kaynak ara"></label></section>
+    <section class="feed-head"><div class="eyebrow">SON HABERLER</div><h2 id="feedTitle" class="visually-hidden" aria-live="polite">Haberler yükleniyor…</h2></section>
     <section id="feed" class="feed" aria-live="polite"></section>
     <div id="empty" class="empty hidden">Bu kategoride henüz haber yok.</div>
   </main>

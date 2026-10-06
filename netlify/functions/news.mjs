@@ -65,6 +65,9 @@ async function handleCreateCategory(store, payload) {
   }
 
   const state = await readState(store);
+  if (state.categories.some((entry) => entry.name.toLocaleLowerCase('tr-TR') === name.toLocaleLowerCase('tr-TR'))) {
+    return jsonResponse({ message: "Bu kategori zaten mevcut." }, 409);
+  }
   state.categories.unshift({
     id: crypto.randomUUID(),
     name,
@@ -89,6 +92,9 @@ async function handleUpdateCategory(store, payload) {
     return jsonResponse({ message: "Kategori bulunamadi." }, 404);
   }
 
+  if (state.categories.some((entry) => entry.id !== categoryId && entry.name.toLocaleLowerCase('tr-TR') === name.toLocaleLowerCase('tr-TR'))) {
+    return jsonResponse({ message: "Bu kategori adı zaten kullanılıyor." }, 409);
+  }
   category.name = name;
 
   await writeState(store, state);
@@ -107,6 +113,9 @@ async function handleDeleteCategory(store, payload) {
 
   if (!exists) {
     return jsonResponse({ message: "Kategori bulunamadi." }, 404);
+  }
+  if (state.categories.length <= 1) {
+    return jsonResponse({ message: "En az bir kategori kalmalı." }, 409);
   }
 
   state.categories = state.categories.filter((entry) => entry.id !== categoryId);
